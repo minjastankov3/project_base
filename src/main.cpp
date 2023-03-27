@@ -106,9 +106,34 @@ int main() {
     Shader floorShader("resources/shaders/floor.vs", "resources/shaders/floor.fs");
     Shader hdrShader("resources/shaders/hdr.vs", "resources/shaders/hdr.fs");
     Shader blurShader("resources/shaders/blur.vs", "resources/shaders/blur.fs");
+    Shader blendingShader("blending.vs", "blending.fs");
 
 
 
+    //-----floor2.0-----
+    float planeVertices[] = {
+            // positions          // texture Coords
+            5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
+            -5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
+            -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
+
+            5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
+            -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
+            5.0f, -0.5f, -5.0f,  2.0f, 2.0f
+    };
+    unsigned int planeVAO, planeVBO;
+    glGenVertexArrays(1, &planeVAO);
+    glGenBuffers(1, &planeVBO);
+    glBindVertexArray(planeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+//floor-before
+/*
     //----Floor-------------------
     float Floor_vertices[] = {
             // positions                        // normals                      // texture coords
@@ -119,7 +144,7 @@ int main() {
             -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
             -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
     };
-
+*/
     //----cube inside the skybox
     float cubeVertices[] = {
             // positions                       // texture Coords
@@ -210,6 +235,8 @@ int main() {
             1.0f, -1.0f,  1.0f
     };
 
+//floor-before
+/*
     // floor VAO
     unsigned int floorVBO, floorVAO;
     glGenVertexArrays(1, &floorVAO);
@@ -223,7 +250,7 @@ int main() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-
+*/
 
     // cube VAO
     unsigned int cubeVAO, cubeVBO;
@@ -238,6 +265,7 @@ int main() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
     // skybox i loadtexture bili ovde
+//    hdr & ping-pong
 /*
     //--------Hdr framebuffer -----
     unsigned int hdrFBO;
@@ -313,6 +341,7 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 */
+
     // skybox VAO- moved to be last
     unsigned int skyboxVAO, skyboxVBO;
     glGenVertexArrays(1, &skyboxVAO);
@@ -325,6 +354,7 @@ int main() {
 
     unsigned int floorTexture = loadTexture(FileSystem::getPath("resources/textures/dirt-texture-game-assets-sbbottom.jpg").c_str());
     //unsigned int floorTexture = loadTexture(FileSystem::getPath("resources/textures/ground_0003_plane_600.png").c_str());
+    //unsigned int floorTexture = loadTexture(FileSystem::getPath("resources/textures/metal.png").c_str()); //floor2.0
     unsigned int cubeTexture = loadTexture(FileSystem::getPath("resources/textures/container.jpg").c_str());
 
 
@@ -355,8 +385,13 @@ int main() {
     floorShader.use();
     floorShader.setInt("material.floorTextured", 0);
 
+    blendingShader.use();
+    blendingShader.setInt("texture2", 0);
+
     shader.use();
     shader.setInt("texture1", 0);
+
+
 /*
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
@@ -438,7 +473,8 @@ int main() {
         model = glm::translate(model,backpackPosition); // translate it down so it's at the center of the scene
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
-
+//floor
+/*
         //----------floor-----------
         floorShader.use();
         model = glm::mat4(1.0f);
@@ -462,13 +498,29 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, floorTexture);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
+*/
+
+        //floor 2.0
+
+        // ----- floor 2.0 ------
+        blendingShader.use();
+        model = glm::mat4(1.0f);
+        blendingShader.setMat4("model", model);
+        blendingShader.setMat4("projection", projection);
+        blendingShader.setMat4("view", view);
+        glBindVertexArray(planeVAO);
+        glBindTexture(GL_TEXTURE_2D, floorTexture);
+        //model = glm::mat4(1.0f);
+        //shader.setMat4("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
 
 
         // --------inside cube----------
         shader.use();
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.2));
-        model = glm::translate(model,glm::vec3(-0.4,0,0.2));
+        model = glm::translate(model,glm::vec3(-1.0,0,-1.0));
         shader.setMat4("model",model);
         shader.setMat4("projection",projection);
         shader.setMat4("view",view);
@@ -481,7 +533,7 @@ int main() {
 
         // ------ draw skybox as last
         glDepthMask(GL_FALSE);
-        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+        glDepthFunc(GL_LEQUAL);
         skyboxShader.use();
         skyboxShader.setMat4("view",glm::mat4(glm::mat3(view)));
         skyboxShader.setMat4("projection", projection);
@@ -491,9 +543,11 @@ int main() {
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
         glDepthMask(GL_TRUE);
-        glDepthFunc(GL_LESS); // set depth function back to default
+        glDepthFunc(GL_LESS);
 
-        glBindFramebuffer(GL_FRAMEBUFFER,0);
+//todo: hdr & bloom
+        //glBindFramebuffer(GL_FRAMEBUFFER,0);
+
 /*
         // todo: blur bright fragments with two-pass Gaussian Blur
         bool horizontal = true;
@@ -659,8 +713,8 @@ unsigned int loadTexture(char const * path){
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
