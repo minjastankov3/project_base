@@ -132,8 +132,6 @@ int main() {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
-//floor-before
-/*
     //----Floor-------------------
     float Floor_vertices[] = {
             // positions                        // normals                      // texture coords
@@ -144,7 +142,7 @@ int main() {
             -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
             -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
     };
-*/
+
     //----cube inside the skybox
     float cubeVertices[] = {
             // positions                       // texture Coords
@@ -235,8 +233,19 @@ int main() {
             1.0f, -1.0f,  1.0f
     };
 
-//floor-before
-/*
+    //----vertices for vegetation------
+
+    float transparentVertices[] = {
+            // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+            0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+            0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+            1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+            0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+            1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+            1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+    };
+
     // floor VAO
     unsigned int floorVBO, floorVAO;
     glGenVertexArrays(1, &floorVAO);
@@ -250,7 +259,7 @@ int main() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-*/
+
 
     // cube VAO
     unsigned int cubeVAO, cubeVBO;
@@ -263,6 +272,19 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+    // transparent VAO
+    unsigned int transparentVAO, transparentVBO;
+    glGenVertexArrays(1, &transparentVAO);
+    glGenBuffers(1, &transparentVBO);
+    glBindVertexArray(transparentVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBindVertexArray(0);
 
     // skybox i loadtexture bili ovde
 //    hdr & ping-pong
@@ -356,6 +378,16 @@ int main() {
     //unsigned int floorTexture = loadTexture(FileSystem::getPath("resources/textures/ground_0003_plane_600.png").c_str());
     //unsigned int floorTexture = loadTexture(FileSystem::getPath("resources/textures/metal.png").c_str()); //floor2.0
     unsigned int cubeTexture = loadTexture(FileSystem::getPath("resources/textures/container.jpg").c_str());
+    unsigned int transparentTexture = loadTexture(FileSystem::getPath("resources/textures/grass.png").c_str());
+
+    //-----vegetation locations
+    vector<glm::vec3> vegetation{
+        glm::vec3(-1.5f, 0.0f, -0.48f),
+        glm::vec3( 1.5f, 0.0f, 0.51f),
+        glm::vec3( 0.0f, 0.0f, 0.7f),
+        glm::vec3(-0.3f, 0.0f, -2.3f),
+        glm::vec3 (0.5f, 0.0f, -0.6f)
+    };
 
 
     vector<std::string> faces {
@@ -366,6 +398,7 @@ int main() {
         FileSystem::getPath("resources/textures/skybox/front.jpg"),
         FileSystem::getPath("resources/textures/skybox/back.jpg")
     };
+//todo: new skybox images
     /*vector<std::string> faces {
             FileSystem::getPath("resources/textures/envmap_interstellar1/interstellar_right1.tga"),
             FileSystem::getPath("resources/textures/envmap_interstellar1/interstellar_left1.tga"),
@@ -395,8 +428,7 @@ int main() {
 /*
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
-*/
-/*
+
     blurShader.use();
     blurShader.setInt("image", 0);
 
@@ -471,16 +503,21 @@ int main() {
         glm::vec3 backpackPosition = glm::vec3(0.4f, 0.0, 0.2);
         model = glm::scale(model, glm::vec3(0.2));    // it's a bit too big for our scene, so scale it down
         model = glm::translate(model,backpackPosition); // translate it down so it's at the center of the scene
+        model = glm::translate(model,glm::vec3(1.0,-0.9,-1.0));
+        shader.setMat4("model",model);
+        shader.setMat4("projection",projection);
+        shader.setMat4("view",view);
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
-//floor
-/*
+
+
         //----------floor-----------
         floorShader.use();
         model = glm::mat4(1.0f);
 
         model = glm::scale(model, glm::vec3(15.0));
-        model = glm::translate(model,glm::vec3(0,0.4,-0.1333));
+        //model = glm::translate(model,glm::vec3(0,0.4,-0.1333));
+        model = glm::translate(model,glm::vec3(0,0,0));
         floorShader.setMat4("model", model);
         floorShader.setMat4("projection", projection);
         floorShader.setMat4("view", view);
@@ -496,31 +533,46 @@ int main() {
         glBindVertexArray(floorVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, floorTexture);
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(15.0));
+        model = glm::translate(model,glm::vec3(0,0.465,-0.1333));
+        shader.setMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
-*/
-
-        //floor 2.0
-
+//floor 2.0
+/*
         // ----- floor 2.0 ------
         blendingShader.use();
         model = glm::mat4(1.0f);
+        model = glm::translate(model,glm::vec3(0.0));
         blendingShader.setMat4("model", model);
         blendingShader.setMat4("projection", projection);
         blendingShader.setMat4("view", view);
         glBindVertexArray(planeVAO);
         glBindTexture(GL_TEXTURE_2D, floorTexture);
-        //model = glm::mat4(1.0f);
-        //shader.setMat4("model", model);
+        model = glm::mat4(1.0f);
+        shader.setMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 6);
+*/
+        //------vegetation--------
+        blendingShader.use();
 
+        glBindVertexArray(transparentVAO);
+        glBindTexture(GL_TEXTURE_2D, transparentTexture);
+        for(unsigned int i = 0; i < vegetation.size(); i++){
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, vegetation[i]);
+            blendingShader.setMat4("model", model);
+            shader.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
 
 
         // --------inside cube----------
         shader.use();
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.2));
-        model = glm::translate(model,glm::vec3(-1.0,0,-1.0));
+        model = glm::translate(model,glm::vec3(-1.0,-2.0,-1.0));
         shader.setMat4("model",model);
         shader.setMat4("projection",projection);
         shader.setMat4("view",view);
@@ -597,7 +649,8 @@ int main() {
     glDeleteBuffers(1, &cubeVAO);
     glDeleteVertexArrays(1, &quadVAO);
     glDeleteBuffers(1, &quadVAO);
-
+    glDeleteVertexArrays(1, &planeVAO);
+    glDeleteBuffers(1, &planeVBO);
 
 */
 
