@@ -91,12 +91,12 @@ int main() {
         return -1;
     }
 
-    // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
     //stbi_set_flip_vertically_on_load(true);
 
     // configure global opengl state
     glEnable(GL_DEPTH_TEST);
-
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // build and compile shaders
 
@@ -374,11 +374,9 @@ int main() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
+    unsigned int cubeTexture = loadTexture(FileSystem::getPath("resources/textures/pexels-photo-989941.jpeg").c_str());
     unsigned int floorTexture = loadTexture(FileSystem::getPath("resources/textures/dirt-texture-game-assets-sbbottom.jpg").c_str());
-    //unsigned int floorTexture = loadTexture(FileSystem::getPath("resources/textures/ground_0003_plane_600.png").c_str());
-    //unsigned int floorTexture = loadTexture(FileSystem::getPath("resources/textures/metal.png").c_str()); //floor2.0
-    unsigned int cubeTexture = loadTexture(FileSystem::getPath("resources/textures/container.jpg").c_str());
-    unsigned int transparentTexture = loadTexture(FileSystem::getPath("resources/textures/grass.png").c_str());
+    unsigned int transparentTexture = loadTexture(FileSystem::getPath("resources/textures/pexels-photo-989941.jpeg").c_str());
 
     //-----vegetation locations
     vector<glm::vec3> vegetation{
@@ -419,7 +417,7 @@ int main() {
     floorShader.setInt("material.floorTextured", 0);
 
     blendingShader.use();
-    blendingShader.setInt("texture2", 0);
+    blendingShader.setInt("texture1", 0);
 
     shader.use();
     shader.setInt("texture1", 0);
@@ -478,7 +476,7 @@ int main() {
         glm::mat4 model = glm::mat4(1.0f);
 
         shader.use();
-        shader.setMat4("model", model);
+        //shader.setMat4("model", model); //nisam sigurna da li treba ovde ovo-nista se ne menja
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);
 
@@ -554,8 +552,10 @@ int main() {
         shader.setMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 */
-        //------vegetation--------
-        blendingShader.use();
+
+    //------vegetation--------
+/*        blendingShader.use();
+        blendingShader.setInt("texture1", 0);
 
         glBindVertexArray(transparentVAO);
         glBindTexture(GL_TEXTURE_2D, transparentTexture);
@@ -566,19 +566,23 @@ int main() {
             shader.setMat4("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
-
+*/
 
         // --------inside cube----------
-        shader.use();
+        blendingShader.use();
+        blendingShader.setInt("texture1", 0);
+        blendingShader.setMat4("projection",projection);
+        blendingShader.setMat4("view",view);
+
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.2));
-        model = glm::translate(model,glm::vec3(-1.0,-2.0,-1.0));
-        shader.setMat4("model",model);
-        shader.setMat4("projection",projection);
-        shader.setMat4("view",view);
+        model = glm::translate(model,glm::vec3(-6.0,-2.0,-1.0));
+
+        blendingShader.setMat4("model",model);
         glBindVertexArray(cubeVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, cubeTexture);
+        shader.setMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
 
