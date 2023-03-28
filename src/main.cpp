@@ -106,12 +106,12 @@ int main() {
     Shader floorShader("resources/shaders/floor.vs", "resources/shaders/floor.fs");
     Shader hdrShader("resources/shaders/hdr.vs", "resources/shaders/hdr.fs");
     Shader blurShader("resources/shaders/blur.vs", "resources/shaders/blur.fs");
-    Shader blendingShader("blending.vs", "blending.fs");
+    Shader blendingShader("resources/shaders/blending.vs", "resources/shaders/blending.fs");
 
 
 
     //-----floor2.0-----
-    float planeVertices[] = {
+/*    float planeVertices[] = {
             // positions          // texture Coords
             5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
             -5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
@@ -131,7 +131,7 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-
+*/
     //----Floor-------------------
     float Floor_vertices[] = {
             // positions                        // normals                      // texture coords
@@ -233,19 +233,6 @@ int main() {
             1.0f, -1.0f,  1.0f
     };
 
-    //----vertices for vegetation------
-
-    float transparentVertices[] = {
-            // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
-            0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-            0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
-            1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
-
-            0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
-            1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
-            1.0f,  0.5f,  0.0f,  1.0f,  0.0f
-    };
-
     // floor VAO
     unsigned int floorVBO, floorVAO;
     glGenVertexArrays(1, &floorVAO);
@@ -273,25 +260,14 @@ int main() {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
-    // transparent VAO
-    unsigned int transparentVAO, transparentVBO;
-    glGenVertexArrays(1, &transparentVAO);
-    glGenBuffers(1, &transparentVBO);
-    glBindVertexArray(transparentVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glBindVertexArray(0);
 
     // skybox i loadtexture bili ovde
-//    hdr & ping-pong
+//todo: fix hdr & ping-pong
 /*
     //--------Hdr framebuffer -----
     unsigned int hdrFBO;
     glGenFramebuffers(1, &hdrFBO);
+    //glBindFramebuffer(GL_FRAMEBUFFER,hdrFBO);
     unsigned int colorBuffers[2];
     glGenTextures(2, colorBuffers);
     for(int i = 0; i < 2; i++) {
@@ -376,16 +352,6 @@ int main() {
 
     unsigned int cubeTexture = loadTexture(FileSystem::getPath("resources/textures/pexels-photo-989941.jpeg").c_str());
     unsigned int floorTexture = loadTexture(FileSystem::getPath("resources/textures/dirt-texture-game-assets-sbbottom.jpg").c_str());
-    unsigned int transparentTexture = loadTexture(FileSystem::getPath("resources/textures/pexels-photo-989941.jpeg").c_str());
-
-    //-----vegetation locations
-    vector<glm::vec3> vegetation{
-        glm::vec3(-1.5f, 0.0f, -0.48f),
-        glm::vec3( 1.5f, 0.0f, 0.51f),
-        glm::vec3( 0.0f, 0.0f, 0.7f),
-        glm::vec3(-0.3f, 0.0f, -2.3f),
-        glm::vec3 (0.5f, 0.0f, -0.6f)
-    };
 
 
     vector<std::string> faces {
@@ -438,7 +404,15 @@ int main() {
 
     // load models
     Model ourModel("resources/objects/backpack/backpack.obj");
+    Model destroyedBuildingModel("resources/objects/BuildingRADI/Building01.obj");
+    Model scyscraperModel("resources/objects/zgradaRADI/RuinedCity_pack.obj");
+    Model ruinedBuildingModel("resources/objects/Post_Apocalyptic_BuildingRADI/Post_Apocalyptic_Building.obj");
+
     ourModel.SetShaderTextureNamePrefix("material.");
+    destroyedBuildingModel.SetShaderTextureNamePrefix("material.");
+    ruinedBuildingModel.SetShaderTextureNamePrefix("material.");
+    scyscraperModel.SetShaderTextureNamePrefix("material.");
+
 
     PointLight pointLight;
     pointLight.position = glm::vec3(4.0f, 4.0, 0.0);
@@ -468,7 +442,7 @@ int main() {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         //glBindFramebuffer(GL_FRAMEBUFFER,hdrFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glDepthMask(GL_TRUE);
+		//glDepthMask(GL_TRUE);
 
         // draw scene as normal
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -482,7 +456,6 @@ int main() {
 
         // enable shader before setting uniforms
         ourShader.use();
-        pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
         ourShader.setVec3("pointLight.position", pointLight.position);
         ourShader.setVec3("pointLight.ambient", pointLight.ambient);
         ourShader.setVec3("pointLight.diffuse", pointLight.diffuse);
@@ -497,16 +470,45 @@ int main() {
 
         // render models
         //------backpack------
-        model = glm::mat4(1.0f);
-        glm::vec3 backpackPosition = glm::vec3(0.4f, 0.0, 0.2);
+/*        model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.2));    // it's a bit too big for our scene, so scale it down
-        model = glm::translate(model,backpackPosition); // translate it down so it's at the center of the scene
         model = glm::translate(model,glm::vec3(1.0,-0.9,-1.0));
         shader.setMat4("model",model);
         shader.setMat4("projection",projection);
         shader.setMat4("view",view);
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
+*/
+        //-----destroyedBuildingModel----
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.25));
+        model = glm::translate(model,glm::vec3(14.0f, -2.3, -14.0));
+        shader.setMat4("model",model);
+        shader.setMat4("projection",projection);
+        shader.setMat4("view",view);
+        ourShader.setMat4("model", model);
+        destroyedBuildingModel.Draw(ourShader);
+
+        //-----scyscraperModel-------
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.05));
+        model = glm::translate(model,glm::vec3(-40.0f, -9.5, 14.0));
+        shader.setMat4("model",model);
+        shader.setMat4("projection",projection);
+        shader.setMat4("view",view);
+        ourShader.setMat4("model", model);
+        scyscraperModel.Draw(ourShader);
+
+
+        //-----ruinedBuildingModel-----
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.15));
+        model = glm::translate(model,glm::vec3(20.0f, -2.8, 5.0));
+        shader.setMat4("model",model);
+        shader.setMat4("projection",projection);
+        shader.setMat4("view",view);
+        ourShader.setMat4("model", model);
+        ruinedBuildingModel.Draw(ourShader);
 
 
         //----------floor-----------
@@ -514,7 +516,6 @@ int main() {
         model = glm::mat4(1.0f);
 
         model = glm::scale(model, glm::vec3(15.0));
-        //model = glm::translate(model,glm::vec3(0,0.4,-0.1333));
         model = glm::translate(model,glm::vec3(0,0,0));
         floorShader.setMat4("model", model);
         floorShader.setMat4("projection", projection);
@@ -553,21 +554,6 @@ int main() {
         glDrawArrays(GL_TRIANGLES, 0, 6);
 */
 
-    //------vegetation--------
-/*        blendingShader.use();
-        blendingShader.setInt("texture1", 0);
-
-        glBindVertexArray(transparentVAO);
-        glBindTexture(GL_TEXTURE_2D, transparentTexture);
-        for(unsigned int i = 0; i < vegetation.size(); i++){
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, vegetation[i]);
-            blendingShader.setMat4("model", model);
-            shader.setMat4("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-        }
-*/
-
         // --------inside cube----------
         blendingShader.use();
         blendingShader.setInt("texture1", 0);
@@ -603,9 +589,8 @@ int main() {
 
 //todo: hdr & bloom
         //glBindFramebuffer(GL_FRAMEBUFFER,0);
-
 /*
-        // todo: blur bright fragments with two-pass Gaussian Blur
+        // blur bright fragments with two-pass Gaussian Blur
         bool horizontal = true;
         bool first_iteration = true;
         blurShader.use();
@@ -625,7 +610,7 @@ int main() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-        // todo: now render floating point color buffer to 2D quad and tonemap HDR colors to default framebuffer's (clamped) color range
+        //now render floating point color buffer to 2D quad and tonemap HDR colors to default framebuffer's (clamped) color range
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         hdrShader.use();
@@ -633,8 +618,8 @@ int main() {
         glBindTexture(GL_TEXTURE_2D,colorBuffers[0]);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
-        hdrShader.setInt("bloom",bloom);
-        hdrShader.setInt("hdr",hdr);
+        hdrShader.setBool("bloom",bloom);
+        hdrShader.setBool("hdr",hdr);
         hdrShader.setFloat("exposure",exposure);
         glBindVertexArray(quadVAO);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -653,9 +638,6 @@ int main() {
     glDeleteBuffers(1, &cubeVAO);
     glDeleteVertexArrays(1, &quadVAO);
     glDeleteBuffers(1, &quadVAO);
-    glDeleteVertexArrays(1, &planeVAO);
-    glDeleteBuffers(1, &planeVBO);
-
 */
 
     glfwTerminate();
