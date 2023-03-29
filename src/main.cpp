@@ -109,29 +109,6 @@ int main() {
     Shader blendingShader("resources/shaders/blending.vs", "resources/shaders/blending.fs");
 
 
-
-    //-----floor2.0-----
-/*    float planeVertices[] = {
-            // positions          // texture Coords
-            5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-            -5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
-            -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
-
-            5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-            -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
-            5.0f, -0.5f, -5.0f,  2.0f, 2.0f
-    };
-    unsigned int planeVAO, planeVBO;
-    glGenVertexArrays(1, &planeVAO);
-    glGenBuffers(1, &planeVBO);
-    glBindVertexArray(planeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-*/
     //----Floor-------------------
     float Floor_vertices[] = {
             // positions                        // normals                      // texture coords
@@ -405,13 +382,13 @@ int main() {
     // load models
     Model ourModel("resources/objects/backpack/backpack.obj");
     Model destroyedBuildingModel("resources/objects/BuildingRADI/Building01.obj");
-    Model scyscraperModel("resources/objects/zgradaRADI/RuinedCity_pack.obj");
+    Model skyscraperModel("resources/objects/zgradaRADI/RuinedCity_pack.obj");
     Model ruinedBuildingModel("resources/objects/Post_Apocalyptic_BuildingRADI/Post_Apocalyptic_Building.obj");
 
     ourModel.SetShaderTextureNamePrefix("material.");
     destroyedBuildingModel.SetShaderTextureNamePrefix("material.");
     ruinedBuildingModel.SetShaderTextureNamePrefix("material.");
-    scyscraperModel.SetShaderTextureNamePrefix("material.");
+    skyscraperModel.SetShaderTextureNamePrefix("material.");
 
 
     PointLight pointLight;
@@ -424,6 +401,7 @@ int main() {
     pointLight.linear = 0.09f;
     pointLight.quadratic = 0.032f;
 
+// todo: add spotlight/flashlight
 
     // render loop
     // -----------
@@ -479,31 +457,32 @@ int main() {
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
 */
+
         //-----destroyedBuildingModel----
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.25));
-        model = glm::translate(model,glm::vec3(14.0f, -2.3, -14.0));
+        model = glm::translate(model,glm::vec3(20.0f, -2.3, -20.0));
         shader.setMat4("model",model);
         shader.setMat4("projection",projection);
         shader.setMat4("view",view);
         ourShader.setMat4("model", model);
         destroyedBuildingModel.Draw(ourShader);
 
-        //-----scyscraperModel-------
+        //-----skyscraperModel-------
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.05));
-        model = glm::translate(model,glm::vec3(-40.0f, -9.5, 14.0));
+        model = glm::translate(model,glm::vec3(-80.0f, -9.5, 30.0));
         shader.setMat4("model",model);
         shader.setMat4("projection",projection);
         shader.setMat4("view",view);
         ourShader.setMat4("model", model);
-        scyscraperModel.Draw(ourShader);
+        skyscraperModel.Draw(ourShader);
 
 
         //-----ruinedBuildingModel-----
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.15));
-        model = glm::translate(model,glm::vec3(20.0f, -2.8, 5.0));
+        model = glm::translate(model,glm::vec3(30.0f, -2.8, 10.0));
         shader.setMat4("model",model);
         shader.setMat4("projection",projection);
         shader.setMat4("view",view);
@@ -538,21 +517,6 @@ int main() {
         shader.setMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
-//floor 2.0
-/*
-        // ----- floor 2.0 ------
-        blendingShader.use();
-        model = glm::mat4(1.0f);
-        model = glm::translate(model,glm::vec3(0.0));
-        blendingShader.setMat4("model", model);
-        blendingShader.setMat4("projection", projection);
-        blendingShader.setMat4("view", view);
-        glBindVertexArray(planeVAO);
-        glBindTexture(GL_TEXTURE_2D, floorTexture);
-        model = glm::mat4(1.0f);
-        shader.setMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-*/
 
         // --------inside cube----------
         blendingShader.use();
@@ -588,8 +552,8 @@ int main() {
         glDepthFunc(GL_LESS);
 
 //todo: hdr & bloom
-        //glBindFramebuffer(GL_FRAMEBUFFER,0);
 /*
+        glBindFramebuffer(GL_FRAMEBUFFER,0);
         // blur bright fragments with two-pass Gaussian Blur
         bool horizontal = true;
         bool first_iteration = true;
