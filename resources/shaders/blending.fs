@@ -12,3 +12,5 @@ void main() {
         discard;
     FragColor = texColor;
 }
+//todo:
+//vs mozda ne valja-proveriti sutra da li treba dodati i normale
