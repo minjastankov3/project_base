@@ -35,6 +35,8 @@ const unsigned int SCR_HEIGHT = 600;
 bool hdr = false;
 bool bloom = false;
 float exposure = 1.0f;
+bool inCube = false;
+glm::vec3 cubePosition;
 
 // camera
 Camera camera (glm::vec3(0.0f, 0.0f, 3.0f));
@@ -262,7 +264,6 @@ int main() {
     //--------Hdr framebuffer -----
     unsigned int hdrFBO;
     glGenFramebuffers(1, &hdrFBO);
-    //dole bilo zakomentarisano?
     glBindFramebuffer(GL_FRAMEBUFFER,hdrFBO);
     unsigned int colorBuffers[2];
     glGenTextures(2, colorBuffers);
@@ -397,6 +398,8 @@ int main() {
     hdrShader.setInt("bloomBlur", 1);
 
 
+
+
     // load models
     Model ourModel("resources/objects/backpack/backpack.obj");
     Model destroyedBuildingModel("resources/objects/BuildingRADI/Building01.obj");
@@ -500,6 +503,7 @@ int main() {
         ourShader.setMat4("model", model);
         //advShader.setMat4("model", model);
         destroyedBuildingModel.Draw(ourShader);
+        //destroyedBuildingModel.Draw(advShader);
 
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.25));
@@ -592,10 +596,45 @@ int main() {
 
         // --------inside cube----------
         blendingShader.use();
-        blendingShader.setInt("texture1", 0);
+        //blendingShader.setInt("texture1", 0);
         blendingShader.setMat4("projection",projection);
         blendingShader.setMat4("view",view);
+        blendingShader.setVec3("viewPosition", camera.Position);
 
+        //cube is transparent once you are inside it
+
+        glEnable(GL_CULL_FACE);
+        for(int i = 0; i < 2; i++){
+            if(i){
+                glCullFace(GL_FRONT);
+            }else {
+                glCullFace(GL_BACK);
+            }
+            blendingShader.use();
+            blendingShader.setInt("i", i);
+            model = glm::mat4(1.0f);
+            model = glm::scale(model, glm::vec3(0.2));
+            // ovo dole?
+            model = glm::translate(model,glm::vec3(-6.0,-2.0,-1.0));
+            if(inCube){
+                cubePosition = camera.Position;
+                model = translate(model, camera.Position);
+            }
+            else {
+                model = glm::translate(model, cubePosition);
+            }
+
+            blendingShader.setMat4("model", model);
+            glBindVertexArray(cubeVAO);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, cubeTexture);
+            shader.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glBindVertexArray(0);
+        }
+        glDisable(GL_CULL_FACE);
+
+        /*
         model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(0.2));
         model = glm::translate(model,glm::vec3(-6.0,-2.0,-1.0));
@@ -607,7 +646,7 @@ int main() {
         shader.setMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
-
+*/
 
         // ------ draw skybox as last
         glDepthMask(GL_FALSE);
@@ -623,7 +662,6 @@ int main() {
         glDepthMask(GL_TRUE);
         glDepthFunc(GL_LESS);
 
-//todo: hdr & bloom
 
         glBindFramebuffer(GL_FRAMEBUFFER,0);
 
@@ -730,6 +768,26 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+
+    if(key == GLFW_KEY_B && action == GLFW_PRESS){
+        bloom=!bloom;
+    }
+    if(key == GLFW_KEY_H && action == GLFW_PRESS){
+        hdr=!hdr;
+    }
+    if(key == GLFW_KEY_UP && action == GLFW_PRESS){
+        exposure+=0.03;
+    }
+    if(key == GLFW_KEY_DOWN && action == GLFW_PRESS){
+        if(exposure > 0.0f)
+            exposure-=0.03;
+        else
+            exposure = 0.0f;
+    }
+    if(GLFW_KEY_ENTER && action == GLFW_PRESS){
+        inCube = !inCube;
+    }
+
     /*if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
         programState->ImGuiEnabled = !programState->ImGuiEnabled;
         if (programState->ImGuiEnabled) {
