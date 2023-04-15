@@ -12,6 +12,8 @@ uniform vec3 viewPosition;
 
 void main() {
     vec4 texColor = texture(texture1, TexCoords);
+    if(texColor.a < 0.1)
+        discard;
     if(i == 0){
         texColor.a = 0.1;
     }

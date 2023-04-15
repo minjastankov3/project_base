@@ -122,7 +122,6 @@ int main() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // build and compile shaders
-
     Shader shader("resources/shaders/cubemaps.vs", "resources/shaders/cubemaps.fs");
     Shader skyboxShader("resources/shaders/skybox.vs","resources/shaders/skybox.fs");
     Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
@@ -261,7 +260,7 @@ int main() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
 
-    //--------Hdr framebuffer -----
+    //--------Hdr-------
     unsigned int hdrFBO;
     glGenFramebuffers(1, &hdrFBO);
     glBindFramebuffer(GL_FRAMEBUFFER,hdrFBO);
@@ -276,7 +275,7 @@ int main() {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0+i,GL_TEXTURE_2D,colorBuffers[i],0);
     }
-    //----depth buffer-renderbuffer------
+
     unsigned int rboDepth;
     glGenRenderbuffers(1, &rboDepth);
     glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
@@ -290,8 +289,6 @@ int main() {
         std::cout << "Framebuffer not complete!" << std::endl;
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    //------ping pong---------
 
     unsigned int pingpongFBO[2];
     unsigned int pingpongColorbuffers[2];
@@ -349,7 +346,8 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
     unsigned int cubeTexture = loadTexture(FileSystem::getPath("resources/textures/pexels-photo-989941.jpeg").c_str());
-    unsigned int floorTexture = loadTexture(FileSystem::getPath("resources/textures/dirttexture.jpg").c_str());
+    //unsigned int floorTexture = loadTexture(FileSystem::getPath("resources/textures/dirttexture.jpg").c_str());
+    unsigned int floorTexture = loadTexture(FileSystem::getPath("resources/textures/13105.jpg").c_str());
 
 
     vector<std::string> faces {
@@ -360,20 +358,21 @@ int main() {
         FileSystem::getPath("resources/textures/skybox/front.jpg"),
         FileSystem::getPath("resources/textures/skybox/back.jpg")
     };
-//todo: new skybox images
-    /*vector<std::string> faces {
-            FileSystem::getPath("resources/textures/envmap_interstellar1/interstellar_right1.tga"),
-            FileSystem::getPath("resources/textures/envmap_interstellar1/interstellar_left1.tga"),
-            FileSystem::getPath("resources/textures/envmap_interstellar1/interstellar_top.tga"),
-            FileSystem::getPath("resources/textures/envmap_interstellar1/interstellar_bottom.tga"),
-            FileSystem::getPath("resources/textures/envmap_interstellar1/interstellar_front1.tga"),
-            FileSystem::getPath("resources/textures/envmap_interstellar1/interstellar_back1.tga"),
-    }; */
 
+//todo: rotate skyboxK images 180 st
+/*
+    vector<std::string> faces {
+            FileSystem::getPath("resources/textures/skyboxK2/right.jpg"),
+            FileSystem::getPath("resources/textures/skyboxK2/left.jpg"),
+            FileSystem::getPath("resources/textures/skyboxK2/up.jpg"),
+            FileSystem::getPath("resources/textures/skyboxK2/bottom.jpg"),
+            FileSystem::getPath("resources/textures/skyboxK2/front.jpg"),
+            FileSystem::getPath("resources/textures/skyboxK2/back.jpg"),
+    };
+*/
     unsigned int cubemapTexture = loadCubemap(faces);
 
     // shader configuration
-
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
 
@@ -386,10 +385,6 @@ int main() {
     shader.use();
     shader.setInt("texture1", 0);
 
-/*
-    skyboxShader.use();
-    skyboxShader.setInt("skybox", 0);
-*/
     blurShader.use();
     blurShader.setInt("image", 0);
 
@@ -397,19 +392,16 @@ int main() {
     hdrShader.setInt("hdrBuffer", 0);
     hdrShader.setInt("bloomBlur", 1);
 
-
-
-
     // load models
-    Model ourModel("resources/objects/backpack/backpack.obj");
     Model destroyedBuildingModel("resources/objects/BuildingRADI/Building01.obj");
-    Model skyscraperModel("resources/objects/zgradaRADI/RuinedCity_pack.obj");
-    Model ruinedBuildingModel("resources/objects/Post_Apocalyptic_BuildingRADI/Post_Apocalyptic_Building.obj");
+    Model carModel("resources/objects/car/LowPolyCars.obj");
+    Model treeModel("resources/objects/tree/tree.obj");
+    Model streetlampModel("resources/objects/lamp/streetlamp.obj");
 
-    ourModel.SetShaderTextureNamePrefix("material.");
     destroyedBuildingModel.SetShaderTextureNamePrefix("material.");
-    ruinedBuildingModel.SetShaderTextureNamePrefix("material.");
-    skyscraperModel.SetShaderTextureNamePrefix("material.");
+    carModel.SetShaderTextureNamePrefix("material.");
+    treeModel.SetShaderTextureNamePrefix("material.");
+    streetlampModel.SetShaderTextureNamePrefix("material.");
 
     // light init
     PointLight pointLight;
@@ -436,7 +428,6 @@ int main() {
 
 
     // render loop
-
     while (!glfwWindowShouldClose(window)) {
 
         float currentFrame = glfwGetTime();
@@ -446,8 +437,6 @@ int main() {
         processInput(window);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-        //glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glBindFramebuffer(GL_FRAMEBUFFER,hdrFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDepthMask(GL_TRUE);
@@ -458,7 +447,6 @@ int main() {
         glm::mat4 model = glm::mat4(1.0f);
 
         shader.use();
-        //shader.setMat4("model", model); //nisam sigurna da li treba ovde ovo-nista se ne menja
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);
 
@@ -473,23 +461,86 @@ int main() {
         setUpShader(ourShader,pointLight.position,pointLight.specular,pointLight.diffuse,pointLight.ambient,pointLight.constant,pointLight.linear,pointLight.quadratic,projection,view,camera.Position,true,spotLight.cutOff,spotLight.outerCutOff,spotLight.direction);
         setUpShader(advShader,pointLight.position,pointLight.specular,pointLight.diffuse,pointLight.ambient,pointLight.constant,pointLight.linear,pointLight.quadratic,projection,view,camera.Position,true,spotLight.cutOff,spotLight.outerCutOff,spotLight.direction);
 
-        /*
-        ourShader.use();
-        ourShader.setVec3("pointLight.position", pointLight.position);
-        ourShader.setVec3("pointLight.ambient", pointLight.ambient);
-        ourShader.setVec3("pointLight.diffuse", pointLight.diffuse);
-        ourShader.setVec3("pointLight.specular", pointLight.specular);
-        ourShader.setFloat("pointLight.constant", pointLight.constant);
-        ourShader.setFloat("pointLight.linear", pointLight.linear);
-        ourShader.setFloat("pointLight.quadratic", pointLight.quadratic);
-        ourShader.setFloat("material.shininess", 32.0f);
-        ourShader.setVec3("viewPosition", camera.Position);
-        ourShader.setMat4("projection", projection);
-        ourShader.setMat4("view", view);
-*/
-
-
         // render models
+
+        //-----carModel-----
+        ourShader.use();
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.25));
+        model = glm::translate(model,glm::vec3(22.0f, -2.1, -10.0));
+        shader.setMat4("model",model);
+        shader.setMat4("projection",projection);
+        shader.setMat4("view",view);
+        ourShader.setMat4("model", model);
+        carModel.Draw(ourShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.25));
+        model = glm::translate(model,glm::vec3(7.0f, -2.1, 8.0));
+        ourShader.setMat4("model", model);
+        carModel.Draw(ourShader);
+
+    //todo: rotate the car
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.25));
+        model = glm::translate(model,glm::vec3(-2.0f, -2.1, 12.0));
+        ourShader.setMat4("model", model);
+        carModel.Draw(ourShader);
+
+
+       //---- treeModel-----
+        blendingShader.use();
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.2));
+        model = glm::translate(model,glm::vec3(16.5f, -2.6, -28.0));
+        shader.setMat4("model",model);
+        shader.setMat4("projection",projection);
+        shader.setMat4("view",view);
+        blendingShader.setMat4("model", model);
+        treeModel.Draw(blendingShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.2));
+        model = glm::translate(model,glm::vec3(0.0f, -2.6, -28.0));
+        blendingShader.setMat4("model", model);
+        treeModel.Draw(blendingShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.2));
+        model = glm::translate(model,glm::vec3(-16.0f, -2.6, -28.0));
+        blendingShader.setMat4("model", model);
+        treeModel.Draw(blendingShader);
+
+
+        //----streetlampModel------
+        ourShader.use();
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.08));
+        model = glm::translate(model,glm::vec3(55.0f, -5.8, 10.0));
+        shader.setMat4("model",model);
+        shader.setMat4("projection",projection);
+        shader.setMat4("view",view);
+        ourShader.setMat4("model", model);
+        streetlampModel.Draw(ourShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.08));
+        model = glm::translate(model,glm::vec3(35.0f, -5.8, 10.0));
+        ourShader.setMat4("model", model);
+        streetlampModel.Draw(ourShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.08));
+        model = glm::translate(model,glm::vec3(5.0f, -5.8, 10.0));
+        ourShader.setMat4("model", model);
+        streetlampModel.Draw(ourShader);
+
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.08));
+        model = glm::translate(model,glm::vec3(-15.0f, -5.8, 10.0));
+        ourShader.setMat4("model", model);
+        streetlampModel.Draw(ourShader);
+
 
         //-----destroyedBuildingModel----
         ourShader.use();
@@ -542,30 +593,6 @@ int main() {
         ourShader.setMat4("model", model);
         destroyedBuildingModel.Draw(ourShader);
 
-
-/*
-        //-----skyscraperModel-------
-        model = glm::mat4(1.0f);
-        model = glm::scale(model, glm::vec3(0.05));
-        model = glm::translate(model,glm::vec3(-80.0f, -9.5, 30.0));
-        shader.setMat4("model",model);
-        shader.setMat4("projection",projection);
-        shader.setMat4("view",view);
-        ourShader.setMat4("model", model);
-        skyscraperModel.Draw(ourShader);
-
-
-        //-----ruinedBuildingModel-----
-        model = glm::mat4(1.0f);
-        model = glm::scale(model, glm::vec3(0.15));
-        model = glm::translate(model,glm::vec3(30.0f, -2.8, 10.0));
-        shader.setMat4("model",model);
-        shader.setMat4("projection",projection);
-        shader.setMat4("view",view);
-        ourShader.setMat4("model", model);
-        ruinedBuildingModel.Draw(ourShader);
-
-*/
         //----------floor-----------
         floorShader.use();
         model = glm::mat4(1.0f);
@@ -596,13 +623,11 @@ int main() {
 
         // --------inside cube----------
         blendingShader.use();
-        //blendingShader.setInt("texture1", 0);
         blendingShader.setMat4("projection",projection);
         blendingShader.setMat4("view",view);
         blendingShader.setVec3("viewPosition", camera.Position);
 
         //cube is transparent once you are inside it
-
         glEnable(GL_CULL_FACE);
         for(int i = 0; i < 2; i++){
             if(i){
@@ -634,20 +659,6 @@ int main() {
         }
         glDisable(GL_CULL_FACE);
 
-        /*
-        model = glm::mat4(1.0f);
-        model = glm::scale(model, glm::vec3(0.2));
-        model = glm::translate(model,glm::vec3(-6.0,-2.0,-1.0));
-
-        blendingShader.setMat4("model",model);
-        glBindVertexArray(cubeVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, cubeTexture);
-        shader.setMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
-*/
-
         // ------ draw skybox as last
         glDepthMask(GL_FALSE);
         glDepthFunc(GL_LEQUAL);
@@ -661,7 +672,6 @@ int main() {
         glBindVertexArray(0);
         glDepthMask(GL_TRUE);
         glDepthFunc(GL_LESS);
-
 
         glBindFramebuffer(GL_FRAMEBUFFER,0);
 
@@ -787,16 +797,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     if(GLFW_KEY_ENTER && action == GLFW_PRESS){
         inCube = !inCube;
     }
-
-    /*if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
-        programState->ImGuiEnabled = !programState->ImGuiEnabled;
-        if (programState->ImGuiEnabled) {
-            programState->CameraMouseMovementUpdateEnabled = false;
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        } else {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        }
-    }*/
 }
 
 unsigned int loadCubemap(vector<std::string> faces) {
