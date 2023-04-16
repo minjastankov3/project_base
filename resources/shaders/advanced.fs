@@ -44,6 +44,7 @@ in vec3 Normal;
 
 uniform PointLight pointLight;
 uniform SpotLight spotLight;
+uniform bool FlashLight;
 uniform Material material;
 uniform vec3 viewPos;
 
@@ -58,7 +59,7 @@ void main() {
     result += CalcSpotLight(spotLight,norm,FragPos,viewDir);
 
     float brightness = dot(result,vec3(0.2126,0.7152,0.0722));
-    if (brightness > 0.9){
+    if (brightness > 1.0){
         BrightColor = vec4(result,1.0);
     }else{
         BrightColor = vec4(0.0,0.0,0.0,1.0);
@@ -73,7 +74,6 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     vec3 lightDir = normalize(light.position - fragPos);
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 reflectDir = reflect(-lightDir, normal);
-
     vec3 halfwayDir = normalize(lightDir+viewDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
     float distance = length(light.position - fragPos);
