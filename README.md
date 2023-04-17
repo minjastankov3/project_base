@@ -1,7 +1,7 @@
 
 1.Use WASD for moving around
 2.Use LShift for faster movement speed
-3.Press enter to go inside the cube, and enter again to leave it. The cube is transparent only from the inside.
+3.Press F for flashlight
 4.Effects:
 	-press H to activate/deactivate HDR
 	-press B to activate/deactivate Bloom

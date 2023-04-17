@@ -27,5 +27,4 @@ void main() {
         FragColor = vec4(result, 1.0);
     }
 }
-
-//ne gomilam isti kod vec merge-ujem hrd i bloom fs, a vs im je isti
+//merged hdr and bloom fd in order to avoid code duplication, vs is the same
