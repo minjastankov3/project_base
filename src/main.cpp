@@ -123,7 +123,6 @@ int main() {
     // build and compile shaders
     Shader shader("resources/shaders/cubemaps.vs", "resources/shaders/cubemaps.fs");
     Shader skyboxShader("resources/shaders/skybox.vs","resources/shaders/skybox.fs");
-    Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
     Shader floorShader("resources/shaders/floor.vs", "resources/shaders/floor.fs");
     Shader hdrShader("resources/shaders/hdr.vs", "resources/shaders/hdr.fs");
     Shader blurShader("resources/shaders/blur.vs", "resources/shaders/blur.fs");
@@ -382,10 +381,6 @@ int main() {
 
 
         // setup shaders
-        setUpShader(ourShader,pointLight.position,pointLight.specular,pointLight.diffuse,pointLight.ambient,pointLight.constant,pointLight.linear,pointLight.quadratic,projection,view,camera.Position,true,spotLight.cutOff,spotLight.outerCutOff,spotLight.direction);
-        setUpShader(ourShader,spotLight.position,spotLight.specular,spotLight.diffuse,spotLight.ambient,spotLight.constant,spotLight.linear,spotLight.quadratic,projection,view,camera.Position,false,spotLight.cutOff,spotLight.outerCutOff,spotLight.direction);
-
-
         setUpShader(advShader,pointLight.position,pointLight.specular,pointLight.diffuse,pointLight.ambient,pointLight.constant,pointLight.linear,pointLight.quadratic,projection,view,camera.Position,true,spotLight.cutOff,spotLight.outerCutOff,spotLight.direction);
         setUpShader(advShader,spotLight.position,spotLight.specular,spotLight.diffuse,spotLight.ambient,spotLight.constant,spotLight.linear,spotLight.quadratic,projection,view,camera.Position,false,spotLight.cutOff,spotLight.outerCutOff,spotLight.direction);
 
